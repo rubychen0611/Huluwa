@@ -1,18 +1,24 @@
 package huluwa.Space;
 import huluwa.Creature.Creature;
+
+import java.awt.*;
+import java.util.ArrayList;
+
 public class Position //队列位置类
 {
     private int x, y;
     private Creature holder; //位置的占有者
     private boolean empty; //位置是否为空
+    public ArrayList<Image> corpseImages; //尸体图片
     public Position(int x, int y)
     {
         super();
         this.x = x;
         this.y = y;
         empty = true;
+        corpseImages = new ArrayList<Image>();
     }
-    public boolean ifEmpty()
+    public synchronized boolean ifEmpty()
     {
         return empty;
     }
@@ -32,20 +38,33 @@ public class Position //队列位置类
     {
         this.y = y;
     }
-    public void setHolder(Creature holder) //进入位置
+    public synchronized void setHolder(Creature holder) //进入位置
     {
         this.holder = holder;
         empty = false;
     }
-    public Creature out() //从位置离开
+    public synchronized void out() //从位置离开
     {
-        Creature holder = this.holder;
         this.holder = null;
         empty = true;
-        return holder;
+        notifyAll();
     }
-    public Creature getHolder() //获得当前角色的引用
+    public synchronized Creature getHolder() //获得当前角色的引用
     {
         return this.holder;
     }
+    public synchronized void waitForPos() throws InterruptedException
+    {
+        while(!ifEmpty())
+            wait();
+    }
+    public synchronized void addCorpseImages(Image image)
+    {
+        corpseImages.add(image);
+    }
+    public synchronized ArrayList<Image> getCorpseImages()
+    {
+        return corpseImages;
+    }
+
 }

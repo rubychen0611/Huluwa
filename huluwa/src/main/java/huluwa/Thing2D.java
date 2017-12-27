@@ -5,9 +5,6 @@ import java.awt.Image;
 public class Thing2D
 {
 
-
-   // private int x;
-  //  private int y;
     private Image image;
 
     public Image getImage()

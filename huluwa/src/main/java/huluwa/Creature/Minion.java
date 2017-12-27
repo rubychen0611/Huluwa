@@ -13,14 +13,20 @@ public class Minion extends Creature //小喽啰类
         super(x, y, space);
         this.index = index;
         this.species = Species.MINION;
-
+        this.rank = 1;
+        this.group = Group.EVIL;
         URL loc = this.getClass().getClassLoader().getResource("minion.png");
         ImageIcon iia = new ImageIcon(loc);
         Image image = iia.getImage().getScaledInstance(100,100,Image.SCALE_DEFAULT);
         this.setImage(image);
+        loc = this.getClass().getClassLoader().getResource("minion_dead.png");
+        iia = new ImageIcon(loc);
+        image = iia.getImage().getScaledInstance(100,100,Image.SCALE_DEFAULT);
+        deadImage = image;
     }
-    /*public void report()
+
+    public int getIndex()
     {
-        System.out.print("🐜");
-    }*/
+        return index;
+    }
 }

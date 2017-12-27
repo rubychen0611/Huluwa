@@ -23,6 +23,10 @@ abstract public class Queue<T extends Creature> //抽象类：某生物队列
         temp1.setPosition(p2);
         temp2.setPosition(p1);
     }
+    public Creature[] getCreatures()
+    {
+        return creatures;
+    }
     /*public void FormationChange(Formation form) //变换队形
     {
         this.form = form;

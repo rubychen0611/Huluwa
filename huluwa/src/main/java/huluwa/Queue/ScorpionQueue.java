@@ -8,7 +8,7 @@ public class ScorpionQueue extends Queue<Creature> //蝎子精及其喽啰阵型
     public ScorpionQueue(Space space, Formation form)
     {
         this.form = form;
-        num = 19;
+        num = 11;
         creatures = new Creature[num];
         creatures[0] = new Scorpion(form.getPosTuples().get(0).getX(),form.getPosTuples().get(0).getY(),space); //蝎子精初始化
         for(int i= 1 ; i < num  ; i++)
