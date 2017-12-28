@@ -81,6 +81,27 @@ public class Space extends JPanel//二维坐标表示的空间
         return this.h;
     }
 
+    public synchronized int[][] getCurrentSituation() //获得当前局势表：0为空，1为正义方，-1为邪恶方
+    {
+        int[][] s = new int [Space.N][Space.M];
+        for(int i = 0; i < N; i++)
+        {
+            for(int j = 0; j < M; j++)
+            {
+                if(!positions[i][j].ifEmpty())
+                {
+                    if(positions[i][j].getHolder().group == Group.GOOD)
+                        s[i][j] = 1;
+                    else s[i][j] = -1;
+                }
+                else
+                {
+                    s[i][j] = 0;
+                }
+            }
+        }
+        return s;
+    }
     public boolean ifPositionLegal(int x, int y)
     {
         if(x >= 0 && x < 11 && y >= 0 && y < 9)
