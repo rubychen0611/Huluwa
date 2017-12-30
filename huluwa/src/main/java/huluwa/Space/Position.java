@@ -26,17 +26,9 @@ public class Position //队列位置类
     {
         return x;
     }
-    public void setX(int x)
-    {
-        this.x = x;
-    }
     public int getY()
     {
         return y;
-    }
-    public void setY(int y)
-    {
-        this.y = y;
     }
     public synchronized void setHolder(Creature holder) //进入位置
     {

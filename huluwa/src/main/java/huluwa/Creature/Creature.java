@@ -7,6 +7,9 @@ import java.awt.*;
 import java.util.Random;
 import java.util.Stack;
 
+import static java.lang.Thread.interrupted;
+import static java.lang.Thread.yield;
+
 enum Species //物种
 {
     HULUWA, OLDMAN, SNAKE, SCORPION, MINION;
@@ -117,7 +120,6 @@ public class Creature extends Thing2D implements Runnable//抽象类：生物
             return this.space.getPosition(x,y-1);
         else return this.space.getPosition(x, y+1);
 
-      //  return this.space.getPosition(x+g, y);
     }
     public void run()
     {
@@ -129,29 +131,30 @@ public class Creature extends Thing2D implements Runnable//抽象类：生物
             name += ((Minion)this).getIndex();
         Thread.currentThread().setName( name );
 
-        while (this.isAlive() && !this.space.ifBattleEnds()) //仍活着且战斗未结束
+        while (this.isAlive() && !this.space.ifBattleEnds() && !interrupted()) //仍活着且战斗未结束
             {
-                Position nextPos = decideNextPos();//判断下一步移动位置
-                    if (nextPos != null) {
-                        try {
+               //可能已死！
+                try {
+                    Position nextPos = decideNextPos();//判断下一步移动位置
+                    synchronized (nextPos) {
+                        if (nextPos != null) {
                             nextPos.waitForPos();       //如果该位置有人，等待
-                        } catch (Exception e) {
-                            System.out.println("interrupt1");
-                        }
-                        if(!this.isAlive()) break;
-                        synchronized (nextPos)
-                        {
+                            if (!this.isAlive()) break;
+                            yield();
                             synchronized (this) {
                                 leavePosition();    //两句之间可能出现位置为空
                                 setPosition(nextPos);
                             }
-                       }
+                        }
                     }
-                try {
-                    Thread.sleep(1000);//sleep
-                }catch (Exception e)
+                   Thread.sleep(1000);
+                    }catch (NullPointerException npe)
                 {
-                    System.out.println("interrupt2");
+                    return;
+                }
+                catch (InterruptedException ie)
+                {
+                    System.out.println("interrupt" + name);
                 }
             }
     }

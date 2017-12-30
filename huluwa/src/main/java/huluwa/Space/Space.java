@@ -5,21 +5,22 @@ import huluwa.Formation.LongSnakeForm;
 import huluwa.Formation.SwordForm;
 import huluwa.Queue.HuluwaQueue;
 import huluwa.Queue.ScorpionQueue;
-import huluwa.Tile;
+import huluwa.Background.*;
 
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import javax.swing.JPanel;
-import javax.xml.ws.Holder;
 
 import static java.lang.Thread.sleep;
 
+enum State
+{
+    BEGIN,RUNNING,REPLAY,END;
+}
 public class Space extends JPanel//二维坐标表示的空间
 {
     public static final int N = 11;
@@ -29,16 +30,17 @@ public class Space extends JPanel//二维坐标表示的空间
     private Position [][]positions;
 
     private final int SPACE = 100;
+    private State state = State.BEGIN;
 
     //private ArrayList tiles = new ArrayList();      //背景
    // private Player player;                          //玩家
 
     private int w = 0;
     private int h = 0;
-    private boolean completed = false;
 
     private int goodGroupCount = GOOD_GROUP_NUM;
     private int evilGroupCount = EVIL_GROUP_NUM;
+    private ExecutorService exec;
 
     HuluwaQueue huluwaqueue = null;
     ScorpionQueue scorpionqueue = null;
@@ -48,11 +50,7 @@ public class Space extends JPanel//二维坐标表示的空间
     public Space()
     {
         addKeyListener(new Space.TAdapter()); //键盘监视器
-        goodGroupCount = GOOD_GROUP_NUM;
-        evilGroupCount = EVIL_GROUP_NUM;
-        battleEnds = false;
-        setFocusable(true);
-        try {initWorld();}
+         try {initWorld();}
         catch (Exception e)
         {
             System.out.println("Error1");
@@ -66,7 +64,7 @@ public class Space extends JPanel//二维坐标表示的空间
     {
         battleEnds = true;
     }
-    public synchronized Position getPosition(int x, int y)
+    public  Position getPosition(int x, int y)
     {
         if(!ifPositionLegal(x, y))
             return null;
@@ -81,20 +79,26 @@ public class Space extends JPanel//二维坐标表示的空间
         return this.h;
     }
 
-    public synchronized int[][] getCurrentSituation() //获得当前局势表：0为空，1为正义方，-1为邪恶方
+    public int[][] getCurrentSituation() //获得当前局势表：0为空，1为正义方，-1为邪恶方
     {
         int[][] s = new int [Space.N][Space.M];
         for(int i = 0; i < N; i++)
         {
             for(int j = 0; j < M; j++)
             {
-                if(!positions[i][j].ifEmpty())
+                try{
+                synchronized (positions[i][j])
                 {
-                    if(positions[i][j].getHolder().group == Group.GOOD)
-                        s[i][j] = 1;
-                    else s[i][j] = -1;
+                    if (!positions[i][j].ifEmpty()) {
+                        if (positions[i][j].getHolder().group == Group.GOOD)
+                            s[i][j] = 1;
+                        else s[i][j] = -1;
+                    } else {
+                        s[i][j] = 0;
+                    }
                 }
-                else
+                }
+                catch (NullPointerException e)
                 {
                     s[i][j] = 0;
                 }
@@ -221,12 +225,11 @@ public class Space extends JPanel//二维坐标表示的空间
         boolean flag = false;
         for(Creature c: huluwaqueue.getCreatures())
         {
-            //synchronized (c) {
-                if (c.isAlive()) {
+                if (c.isAlive())
+                {
                     if (ifMeetEnemy(c))
                         flag = true;
                 }
-           // }
         }
         if(oldman.isAlive() && ifMeetEnemy(oldman))
             flag = true;
@@ -235,6 +238,11 @@ public class Space extends JPanel//二维坐标表示的空间
 
     public final void initWorld()
     {
+        goodGroupCount = GOOD_GROUP_NUM;
+        evilGroupCount = EVIL_GROUP_NUM;
+        battleEnds = false;
+        state = State.BEGIN;
+        setFocusable(true);
         w = SPACE * N;
         h = SPACE * M;
         positions = new Position[N][M];
@@ -248,13 +256,14 @@ public class Space extends JPanel//二维坐标表示的空间
         scorpionqueue = new ScorpionQueue(this,new SwordForm()); //蝎子精和喽啰
         snake = new Snake(10, 5,this);
         oldman = new Oldman(1,4,this);
-        //repaint();
     }
 
     public void start() throws Exception
     {
         //Thread.sleep(1500);//sleep
-        ExecutorService exec = Executors.newCachedThreadPool();
+
+        state = State.RUNNING;
+        exec = Executors.newCachedThreadPool();
         for(Creature c :huluwaqueue.getCreatures())
             exec.execute(c);
         for(Creature c: scorpionqueue.getCreatures())
@@ -269,47 +278,75 @@ public class Space extends JPanel//二维坐标表示的空间
                         repaint();
                         try {
                         sleep(100);
-                        synchronized (this) {
-                            ifBattleExists();
-                        }
+                        ifBattleExists();
                         } catch(Exception e)
                        {
                         System.out.println("error3");
                       }
                     }
+                    state = State.END;  //大战结束
                     repaint();
+
                 }
         );
     }
-
-    public void buildWorld(Graphics g)
+    private void drawSituation(Graphics g)
     {
+        int i, j;
+        for (i = 0; i < N; i++) {
+            for (j = 0; j < M; j++) {
 
-       // g.setColor(new Color(250, 240, 170));
-        //g.fillRect(0, 0, this.getWidth(), this.getHeight());
-
-        Tile tile = new Tile();
-        g.drawImage(tile.getImage(),0, 0, this);
-        int i,j ;
-
-        for( i = 0; i < N; i++)
-        {
-            for (j = 0; j < M; j++)
-            {
-                if(!positions[i][j].corpseImages.isEmpty())
-                {
-                    for(Image im: positions[i][j].corpseImages)
-                    {
-                        g.drawImage(im,i * SPACE, j * SPACE, this ); //绘制尸体图片
+                    if (!positions[i][j].corpseImages.isEmpty()) {
+                        for (Image im : positions[i][j].corpseImages) {
+                            g.drawImage(im, i * SPACE, j * SPACE, this); //绘制尸体图片
+                        }
                     }
-                }
-                if (!positions[i][j].ifEmpty())
-                {
-                    g.drawImage(positions[i][j].getHolder().getImage(), i * SPACE, j * SPACE, this);  //绘制生物图片
-                }
+                    if (!positions[i][j].ifEmpty()) {
+                        synchronized (positions[i][j].getHolder()) {
+                            g.drawImage(positions[i][j].getHolder().getImage(), i * SPACE, j * SPACE, this);  //绘制生物图片
+                        }
+                    }
+                   // notifyAll();
+               // }
+
             }
         }
-
+    }
+    public void buildWorld(Graphics g)
+    {
+        switch (state)
+        {
+            case BEGIN :
+                StartBackground sbg = new StartBackground();
+                g.drawImage(sbg.getImage(), 0, 0, this);
+                break;
+            case RUNNING:
+            {
+                Background bg = new Background();
+                g.drawImage(bg.getImage(), 0, 0, this);
+                drawSituation(g);
+                break;
+            }
+            case END:
+            {
+                Background bg = new Background();
+                g.drawImage(bg.getImage(), 0, 0, this);
+                drawSituation(g);
+                if(goodGroupCount == 0)
+                {
+                    MonstersWin mw = new MonstersWin();
+                    g.drawImage(mw.getImage(), 0, 0, this);
+                }
+                else
+                {
+                    HuluwaWin hw = new HuluwaWin();
+                    g.drawImage(hw.getImage(), 0, 0, this);
+                }
+                break;
+            }
+            case REPLAY:
+                break;
+        }
     }
 
     @Override
@@ -324,22 +361,35 @@ public class Space extends JPanel//二维坐标表示的空间
         @Override
         public void keyPressed(KeyEvent e)
         {
-
-            if (completed)
-            {
-                return;
-            }
             int key = e.getKeyCode();
 
             if (key == KeyEvent.VK_SPACE)
             {
-               try
-               {
-                   start();
-               }catch (Exception ex)
-               {
-                   System.out.println("error2");
-               }
+                if(state == State.BEGIN)
+                {
+                    try {
+                        start();
+                    } catch (Exception ex) {
+                        System.out.println("error2");
+                    }
+                }
+                else if(state == State.END )
+                {
+                    exec.shutdownNow();
+                    repaint();
+                    try {
+                        sleep(1000);
+                    }catch (InterruptedException ie)
+                    {
+                        System.out.println("wating for all threads being shut down: interrupt");
+                    }
+                    try {initWorld();}
+                    catch (Exception ex)
+                    {
+                        System.out.println("Error1");
+                    }
+                    state = State.BEGIN;
+                }
             }
 
         }

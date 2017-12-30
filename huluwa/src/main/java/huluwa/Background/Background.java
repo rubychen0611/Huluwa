@@ -1,12 +1,14 @@
-package huluwa;
+package huluwa.Background;
+
+import huluwa.Thing2D;
 
 import java.awt.Image;
 import java.net.URL;
 import javax.swing.ImageIcon;
 
-public class Tile extends Thing2D {
+public class Background extends Thing2D {
 
-    public Tile() {
+    public Background() {
 
         URL loc = this.getClass().getClassLoader().getResource("bg.png");
         ImageIcon iia = new ImageIcon(loc);
