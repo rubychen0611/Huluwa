@@ -7,11 +7,15 @@ import huluwa.Queue.HuluwaQueue;
 import huluwa.Queue.ScorpionQueue;
 import huluwa.Background.*;
 import huluwa.Replay.FileManager;
+import huluwa.Replay.Scene;
 
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,11 +47,16 @@ public class Space extends JPanel//二维坐标表示的空间
     private int evilGroupCount = EVIL_GROUP_NUM;
     private ExecutorService exec;
     private FileManager fileManager;
+    //private boolean ifNewScene = false;
+    private Scene scene;
 
     HuluwaQueue huluwaqueue = null;
     ScorpionQueue scorpionqueue = null;
     Oldman oldman = null;
     Snake snake = null;
+    //ArrayList<Creature> creatures;
+    private Map<Integer, Image> livingImages;
+    private Map<Integer, Image> corpseImages;
     private boolean battleEnds = false;
     public Space()
     {
@@ -108,6 +117,23 @@ public class Space extends JPanel//二维坐标表示的空间
         }
         return s;
     }
+    public void addImages(int creatureNo, Image livingImage, Image deadImage)
+    {
+        this.livingImages.put(new Integer(creatureNo), livingImage);
+        this.corpseImages.put(new Integer(creatureNo),deadImage);
+    }
+    /*public synchronized Scene getScene()
+    {
+        //ifNewScene = false;
+        return scene;
+    }
+    public synchronized void waitingForNewScene() throws InterruptedException
+    {
+        while (!ifNewScene)
+        {
+            wait();
+        }
+    }*/
     public boolean ifPositionLegal(int x, int y)
     {
         if(x >= 0 && x < 11 && y >= 0 && y < 9)
@@ -244,6 +270,9 @@ public class Space extends JPanel//二维坐标表示的空间
         battleEnds = false;
         state = State.BEGIN;
         setFocusable(true);
+        Creature.setCountZero();
+        livingImages = new HashMap<Integer, Image>();
+        corpseImages = new HashMap<Integer, Image>();
         w = SPACE * N;
         h = SPACE * M;
         positions = new Position[N][M];
@@ -257,7 +286,7 @@ public class Space extends JPanel//二维坐标表示的空间
         scorpionqueue = new ScorpionQueue(this,new SwordForm()); //蝎子精和喽啰
         snake = new Snake(10, 5,this);
         oldman = new Oldman(1,4,this);
-        fileManager = new FileManager();
+        fileManager = new FileManager(this);
     }
 
     public void start() throws Exception
@@ -270,6 +299,7 @@ public class Space extends JPanel//二维坐标表示的空间
             exec.execute(c);
         exec.execute(snake);//蛇精
         exec.execute(oldman); //老爷爷
+        //exec.execute(fileManager); //文件记录
         exec.execute(           //刷新屏幕线程，λ表达式
                 ()->
                 {
@@ -289,7 +319,7 @@ public class Space extends JPanel//二维坐标表示的空间
 
                 }
         );
-        exec.execute(
+       /* exec.execute(
                 ()->
                 {
                     while(!ifBattleEnds() && !interrupted())
@@ -303,26 +333,31 @@ public class Space extends JPanel//二维坐标表示的空间
                         }
                     }
                 }
-        );
+        );*/
     }
-    private void drawSituation(Graphics g)
+    private synchronized void drawSituation(Graphics g)
     {
         int i, j;
+        scene = new Scene();
         for (i = 0; i < N; i++) {
             for (j = 0; j < M; j++) {
-
-                    if (!positions[i][j].corpseImages.isEmpty()) {
-                        for (Image im : positions[i][j].corpseImages) {
-                            g.drawImage(im, i * SPACE, j * SPACE, this); //绘制尸体图片
+                    if (!positions[i][j].corpseImagesNo.isEmpty()) {
+                        for (Integer no : positions[i][j].corpseImagesNo) {
+                            g.drawImage(corpseImages.get(no), i * SPACE, j * SPACE, this); //绘制尸体图片
+                            scene.addDisplayElement(no,false,i,j);
                         }
                     }
                     if (!positions[i][j].ifEmpty()) {
                         synchronized (positions[i][j].getHolder()) {
                             g.drawImage(positions[i][j].getHolder().getImage(), i * SPACE, j * SPACE, this);  //绘制生物图片
+                            scene.addDisplayElement(positions[i][j].getHolder().getCreatureNo(),true,i,j);
                         }
                     }
             }
         }
+        //ifNewScene = true;
+        //notifyAll();
+        fileManager.writeRecord(scene);
     }
     public void buildWorld(Graphics g)
     {
@@ -375,47 +410,58 @@ public class Space extends JPanel//二维坐标表示的空间
         {
             int key = e.getKeyCode();
 
-            if (key == KeyEvent.VK_SPACE)
+            switch (key)
             {
-                if(state == State.BEGIN)
-                {
-                    fileManager.newRecord();
-                    try {
-                        start();
-                    } catch (Exception ex) {
-                        System.out.println("error2");
-                    }
-                }
-                else if(state == State.END )
-                {
-                    exec.shutdownNow();
-                    repaint();
-                    try {
-                        sleep(1000);
-                    }catch (InterruptedException ie)
+                case KeyEvent.VK_SPACE:
+                    if(state == State.BEGIN)
                     {
-                        System.out.println("wating for all threads being shut down: interrupt");
+                        fileManager.newRecord();
+                        try {
+                            start();
+                        } catch (Exception ex) {
+                            System.out.println("error2");
+                        }
                     }
-                    try {initWorld();}
-                    catch (Exception ex)
+                    else if(state == State.END )
                     {
-                        System.out.println("Error1");
+                        exec.shutdownNow();
+                        repaint();
+                        // fileManager.writeFile(goodGroupCount != 0);
+                        try {
+                            sleep(1000);
+                        }catch (InterruptedException ie)
+                        {
+                            System.out.println("wating for all threads being shut down: interrupt");
+                        }
+                        try {initWorld();}
+                        catch (Exception ex)
+                        {
+                            System.out.println("Error1");
+                        }
+                        state = State.BEGIN;
                     }
-                    state = State.BEGIN;
-                }
+                    break;
+                case KeyEvent.VK_L:
+                    if(state == State.BEGIN)
+                    {
+                        JFileChooser fd = new JFileChooser();
+                        fd.showOpenDialog(null);
+                        File f = fd.getSelectedFile();
+                        if (f != null)
+                        {
+                        }
+                    }
+                    break;
+                case KeyEvent.VK_S:
+                    if(state == State.END)
+                    {
+                        fileManager.writeFile(goodGroupCount != 0);
+                        JOptionPane.showMessageDialog(null, "保存成功！");
+                    }
+                    break;
+                default:break;
             }
-            else if (key == KeyEvent.VK_L)          //战斗回放
-            {
-                if(state == State.BEGIN)
-                {
-                    JFileChooser fd = new JFileChooser();
-                    fd.showOpenDialog(null);
-                    File f = fd.getSelectedFile();
-                    if (f != null)
-                    {
-                    }
-                }
-            }
+
 
         }
     }

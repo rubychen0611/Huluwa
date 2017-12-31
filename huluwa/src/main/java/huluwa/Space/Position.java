@@ -9,14 +9,14 @@ public class Position //队列位置类
     private int x, y;
     private Creature holder; //位置的占有者
     private boolean empty; //位置是否为空
-    public ArrayList<Image> corpseImages; //尸体图片
+    public ArrayList<Integer> corpseImagesNo; //尸体图片
     public Position(int x, int y)
     {
         super();
         this.x = x;
         this.y = y;
         empty = true;
-        corpseImages = new ArrayList<Image>();
+        corpseImagesNo = new ArrayList<Integer>();
     }
     public synchronized boolean ifEmpty()
     {
@@ -50,13 +50,13 @@ public class Position //队列位置类
         while(!ifEmpty())
             wait();
     }
-    public synchronized void addCorpseImages(Image image)
+    public synchronized void addCorpseImagesNo(int creatureNo)
     {
-        corpseImages.add(image);
+        corpseImagesNo.add(new Integer(creatureNo));
     }
-    public synchronized ArrayList<Image> getCorpseImages()
+    public synchronized ArrayList<Integer> getCorpseImagesNo()
     {
-        return corpseImages;
+        return corpseImagesNo;
     }
 
 }

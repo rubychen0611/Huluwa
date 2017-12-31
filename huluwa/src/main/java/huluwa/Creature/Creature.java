@@ -23,12 +23,39 @@ public class Creature extends Thing2D implements Runnable//抽象类：生物
     private boolean alive;      //是否死亡
     public int rank;    //战斗力
     public Group group;     //阵营
+    public Image livingImage;
     public Image deadImage;
+    private static int count = 0;  //记录生物创建个数，用于编号，回放时根据编号获取应显示的图片
+    private final int creatureNo;
     public Creature(int x, int y, Space space)
     {
         this.space = space;
         setPosition(space.getPosition(x, y));
         alive = true;
+        this.creatureNo = count++;
+    }
+    public static void setCountZero()
+    {
+        count = 0;
+    }
+    public int getCreatureNo()
+    {
+        return creatureNo;
+    }
+
+    public Image getDeadImage()
+    {
+        return deadImage;
+    }
+
+    public Image getLivingImage()
+    {
+        return livingImage;
+    }
+
+    protected void sendImages()
+    {
+        space.addImages(creatureNo, livingImage, deadImage);
     }
     public synchronized Position getPosition()
     {
@@ -66,7 +93,7 @@ public class Creature extends Thing2D implements Runnable//抽象类：生物
     {
         assert this.isAlive();
         assert !this.ifPositionEmpty();
-        this.position.addCorpseImages(deadImage);
+        this.position.addCorpseImagesNo(creatureNo);
         leavePosition();
         this.alive = false;
     }

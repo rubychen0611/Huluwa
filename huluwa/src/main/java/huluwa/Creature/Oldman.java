@@ -17,10 +17,12 @@ public class Oldman extends Creature //生物：老爷爷
         ImageIcon iia = new ImageIcon(loc);
         Image image = iia.getImage().getScaledInstance(100,100,Image.SCALE_DEFAULT);
         this.setImage(image);
+        livingImage = image;
         loc = this.getClass().getClassLoader().getResource("oldman_dead.png");
         iia = new ImageIcon(loc);
         image = iia.getImage().getScaledInstance(100,100,Image.SCALE_DEFAULT);
         deadImage = image;
+        sendImages();
     }
     /*public void report()
     {
