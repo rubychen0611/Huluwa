@@ -6,15 +6,18 @@ import huluwa.Formation.SwordForm;
 import huluwa.Queue.HuluwaQueue;
 import huluwa.Queue.ScorpionQueue;
 import huluwa.Background.*;
+import huluwa.Replay.FileManager;
 
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import javax.swing.JPanel;
+import javax.swing.*;
 
+import static java.lang.Thread.interrupted;
 import static java.lang.Thread.sleep;
 
 enum State
@@ -32,8 +35,6 @@ public class Space extends JPanel//二维坐标表示的空间
     private final int SPACE = 100;
     private State state = State.BEGIN;
 
-    //private ArrayList tiles = new ArrayList();      //背景
-   // private Player player;                          //玩家
 
     private int w = 0;
     private int h = 0;
@@ -41,6 +42,7 @@ public class Space extends JPanel//二维坐标表示的空间
     private int goodGroupCount = GOOD_GROUP_NUM;
     private int evilGroupCount = EVIL_GROUP_NUM;
     private ExecutorService exec;
+    private FileManager fileManager;
 
     HuluwaQueue huluwaqueue = null;
     ScorpionQueue scorpionqueue = null;
@@ -117,7 +119,6 @@ public class Space extends JPanel//二维坐标表示的空间
         Random random = new Random();
         int rand = random.nextInt(100) + 1; //生成1-100之间的随机数
         int p = 50 + (a.rank - b.rank) * 5;    //强者赢的概率：p = 0.5 +(两者等级之差) * 0.05  则同等级输赢改了各为10%, 等级悬殊最大的两者相遇后强者赢的概率为85%
-      //  System.out.println(rand + " " + p);
         if (rand <= p) return true;    //随机数小于p则a赢
         else return false;
     }
@@ -256,12 +257,11 @@ public class Space extends JPanel//二维坐标表示的空间
         scorpionqueue = new ScorpionQueue(this,new SwordForm()); //蝎子精和喽啰
         snake = new Snake(10, 5,this);
         oldman = new Oldman(1,4,this);
+        fileManager = new FileManager();
     }
 
     public void start() throws Exception
     {
-        //Thread.sleep(1500);//sleep
-
         state = State.RUNNING;
         exec = Executors.newCachedThreadPool();
         for(Creature c :huluwaqueue.getCreatures())
@@ -273,11 +273,11 @@ public class Space extends JPanel//二维坐标表示的空间
         exec.execute(           //刷新屏幕线程，λ表达式
                 ()->
                 {
-                    while(!ifBattleEnds())
+                    while(!ifBattleEnds() && !interrupted())
                      {
                         repaint();
                         try {
-                        sleep(100);
+                        sleep(200);
                         ifBattleExists();
                         } catch(Exception e)
                        {
@@ -287,6 +287,21 @@ public class Space extends JPanel//二维坐标表示的空间
                     state = State.END;  //大战结束
                     repaint();
 
+                }
+        );
+        exec.execute(
+                ()->
+                {
+                    while(!ifBattleEnds() && !interrupted())
+                    {
+                        fileManager.writeRecord();          //写文件
+                        try {
+                            sleep(500);
+                        }catch (InterruptedException ie)
+                        {
+                            System.out.println("FileManager: interrupt");
+                        }
+                    }
                 }
         );
     }
@@ -306,9 +321,6 @@ public class Space extends JPanel//二维坐标表示的空间
                             g.drawImage(positions[i][j].getHolder().getImage(), i * SPACE, j * SPACE, this);  //绘制生物图片
                         }
                     }
-                   // notifyAll();
-               // }
-
             }
         }
     }
@@ -367,6 +379,7 @@ public class Space extends JPanel//二维坐标表示的空间
             {
                 if(state == State.BEGIN)
                 {
+                    fileManager.newRecord();
                     try {
                         start();
                     } catch (Exception ex) {
@@ -391,18 +404,19 @@ public class Space extends JPanel//二维坐标表示的空间
                     state = State.BEGIN;
                 }
             }
+            else if (key == KeyEvent.VK_L)          //战斗回放
+            {
+                if(state == State.BEGIN)
+                {
+                    JFileChooser fd = new JFileChooser();
+                    fd.showOpenDialog(null);
+                    File f = fd.getSelectedFile();
+                    if (f != null)
+                    {
+                    }
+                }
+            }
 
         }
     }
-
-
-/*    public void restartLevel() {
-
-        tiles.clear();
-        initWorld();
-        if (completed) {
-            completed = false;
-        }
-    }
-    */
 }

@@ -133,7 +133,6 @@ public class Creature extends Thing2D implements Runnable//抽象类：生物
 
         while (this.isAlive() && !this.space.ifBattleEnds() && !interrupted()) //仍活着且战斗未结束
             {
-               //可能已死！
                 try {
                     Position nextPos = decideNextPos();//判断下一步移动位置
                     synchronized (nextPos) {
@@ -147,7 +146,8 @@ public class Creature extends Thing2D implements Runnable//抽象类：生物
                             }
                         }
                     }
-                   Thread.sleep(1000);
+                    Random rand = new Random();
+                   Thread.sleep(rand.nextInt(1000) + 800);
                     }catch (NullPointerException npe)
                 {
                     return;
