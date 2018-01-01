@@ -1,5 +1,6 @@
 package huluwa.Replay;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +22,11 @@ public class Record
     {
         return scenes;
     }
+
+    public boolean getResult() {
+        return result;
+    }
+
     public void write(DataOutputStream out) throws IOException
     {
         out.writeInt(scenes.size());//场景数
@@ -28,6 +34,18 @@ public class Record
         for (Scene scene : scenes)
         {
             scene.write(out);
+        }
+    }
+    public void read(DataInputStream in) throws IOException
+    {
+        int scenesCount = in.readInt();
+        result = in.readBoolean();
+        Scene scene;
+        for(int i = 0; i < scenesCount; i++)
+        {
+            scene = new Scene();
+            scene.read(in);
+            scenes.add(scene);
         }
     }
     public void setResult(boolean result)

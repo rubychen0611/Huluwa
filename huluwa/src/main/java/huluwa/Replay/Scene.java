@@ -1,5 +1,8 @@
 package huluwa.Replay;
 
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,6 +14,12 @@ public class Scene
     {
         elements = new ArrayList<DisplayElement>();
     }
+
+    public ArrayList<DisplayElement> getElements()
+    {
+        return elements;
+    }
+
     public void addDisplayElement(int creatureNo, boolean isAlive, int x, int y)
     {
         DisplayElement e = new DisplayElement(creatureNo,isAlive, x, y);
@@ -27,34 +36,19 @@ public class Scene
             out.writeInt(element.getY());
         }
     }
-}
-class DisplayElement
-{
-    int creatureNo;
-    boolean isAlive;
-    int x;
-    int y;
-    public DisplayElement(int creatureNo, boolean isAlive, int x, int y)
+    public void read(DataInputStream in) throws IOException
     {
-        this.creatureNo = creatureNo;
-        this.isAlive = isAlive;
-        this.x = x;
-        this.y = y;
-    }
-
-    public int getCreatureNo() {
-        return creatureNo;
-    }
-
-    public int getX() {
-        return x;
-    }
-    public int getY()
-    {
-        return y;
-    }
-
-    public boolean getIsAlive() {
-        return isAlive;
+        int elementsSize = in.readInt();
+        DisplayElement element;
+        int creatureNo, x, y;
+        boolean isAlive;
+        for(int i = 0; i < elementsSize; i++)
+        {
+            creatureNo = in.readInt();
+            isAlive = in.readBoolean();
+            x = in.readInt();
+            y = in.readInt();
+            elements.add( new DisplayElement(creatureNo, isAlive, x, y));
+        }
     }
 }

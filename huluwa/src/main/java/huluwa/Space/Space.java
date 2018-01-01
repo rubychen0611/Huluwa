@@ -6,27 +6,29 @@ import huluwa.Formation.SwordForm;
 import huluwa.Queue.HuluwaQueue;
 import huluwa.Queue.ScorpionQueue;
 import huluwa.Background.*;
+import huluwa.Replay.DisplayElement;
 import huluwa.Replay.FileManager;
+import huluwa.Replay.Record;
 import huluwa.Replay.Scene;
 
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.*;
+import javax.swing.text.html.HTMLDocument;
 
 import static java.lang.Thread.interrupted;
 import static java.lang.Thread.sleep;
 
 enum State
 {
-    BEGIN,RUNNING,REPLAY,END;
+    BEGIN,RUNNING,REPLAY,END,REPLAYEND;
 }
 public class Space extends JPanel//二维坐标表示的空间
 {
@@ -58,6 +60,7 @@ public class Space extends JPanel//二维坐标表示的空间
     private Map<Integer, Image> livingImages;
     private Map<Integer, Image> corpseImages;
     private boolean battleEnds = false;
+
     public Space()
     {
         addKeyListener(new Space.TAdapter()); //键盘监视器
@@ -122,18 +125,7 @@ public class Space extends JPanel//二维坐标表示的空间
         this.livingImages.put(new Integer(creatureNo), livingImage);
         this.corpseImages.put(new Integer(creatureNo),deadImage);
     }
-    /*public synchronized Scene getScene()
-    {
-        //ifNewScene = false;
-        return scene;
-    }
-    public synchronized void waitingForNewScene() throws InterruptedException
-    {
-        while (!ifNewScene)
-        {
-            wait();
-        }
-    }*/
+
     public boolean ifPositionLegal(int x, int y)
     {
         if(x >= 0 && x < 11 && y >= 0 && y < 9)
@@ -299,7 +291,6 @@ public class Space extends JPanel//二维坐标表示的空间
             exec.execute(c);
         exec.execute(snake);//蛇精
         exec.execute(oldman); //老爷爷
-        //exec.execute(fileManager); //文件记录
         exec.execute(           //刷新屏幕线程，λ表达式
                 ()->
                 {
@@ -319,21 +310,44 @@ public class Space extends JPanel//二维坐标表示的空间
 
                 }
         );
-       /* exec.execute(
+    }
+    public void replay()
+    {
+        ArrayList<Scene> scenes = fileManager.getRecord().getScenes();
+        Iterator it = scenes.iterator();
+        exec = Executors.newCachedThreadPool();
+        exec.execute(           //刷新屏幕线程，λ表达式
                 ()->
                 {
-                    while(!ifBattleEnds() && !interrupted())
-                    {
-                        fileManager.writeRecord();          //写文件
-                        try {
-                            sleep(500);
-                        }catch (InterruptedException ie)
+                    try {
+                        while (it.hasNext())
                         {
-                            System.out.println("FileManager: interrupt");
+                            scene = (Scene) it.next();
+                            repaint();
+                            sleep(150);
                         }
+                        state = State.REPLAYEND;
+                        repaint();
+                    } catch (InterruptedException ie) {
+                        System.out.println("replay: interrupt");
                     }
-                }
-        );*/
+                });
+    }
+    public void drawRecord(Graphics g)
+    {
+        ArrayList<DisplayElement>elements = scene.getElements();
+        for(DisplayElement element: elements)
+        {
+            if(element.getIsAlive())
+            {
+                g.drawImage(livingImages.get(element.getCreatureNo()), element.getX() * SPACE, element.getY() * SPACE, this); //绘制生物图片
+            }
+            else
+            {
+                g.drawImage(corpseImages.get(element.getCreatureNo()), element.getX() * SPACE, element.getY() * SPACE, this);
+            }
+        }
+
     }
     private synchronized void drawSituation(Graphics g)
     {
@@ -355,8 +369,6 @@ public class Space extends JPanel//二维坐标表示的空间
                     }
             }
         }
-        //ifNewScene = true;
-        //notifyAll();
         fileManager.writeRecord(scene);
     }
     public void buildWorld(Graphics g)
@@ -372,8 +384,7 @@ public class Space extends JPanel//二维坐标表示的空间
                 Background bg = new Background();
                 g.drawImage(bg.getImage(), 0, 0, this);
                 drawSituation(g);
-                break;
-            }
+            } break;
             case END:
             {
                 Background bg = new Background();
@@ -389,10 +400,32 @@ public class Space extends JPanel//二维坐标表示的空间
                     HuluwaWin hw = new HuluwaWin();
                     g.drawImage(hw.getImage(), 0, 0, this);
                 }
+            } break;
+            case REPLAY:
+            {
+
+                Background bg = new Background();
+                g.drawImage(bg.getImage(), 0, 0, this);
+                drawRecord(g);
+
+            } break;
+            case REPLAYEND:
+            {
+                Background bg = new Background();
+                g.drawImage(bg.getImage(), 0, 0, this);
+                drawRecord(g);
+                if(fileManager.getRecord().getResult())
+                {
+                    HuluwaWinReplay hw = new HuluwaWinReplay();
+                    g.drawImage(hw.getImage(), 0, 0, this);
+                }
+                else
+                {
+                    MonstersWinReplay mw = new MonstersWinReplay();
+                    g.drawImage(mw.getImage(), 0, 0, this);
+                }
                 break;
             }
-            case REPLAY:
-                break;
         }
     }
 
@@ -415,7 +448,7 @@ public class Space extends JPanel//二维坐标表示的空间
                 case KeyEvent.VK_SPACE:
                     if(state == State.BEGIN)
                     {
-                        fileManager.newRecord();
+                        //fileManager.newRecord();
                         try {
                             start();
                         } catch (Exception ex) {
@@ -436,9 +469,20 @@ public class Space extends JPanel//二维坐标表示的空间
                         try {initWorld();}
                         catch (Exception ex)
                         {
-                            System.out.println("Error1");
+                            System.out.println("Error appears when initWorld");
                         }
                         state = State.BEGIN;
+                        repaint();
+                    }
+                    else if(state == State.REPLAYEND)
+                    {
+                        try {initWorld();}
+                        catch (Exception ex)
+                        {
+                            System.out.println("Error appears when initWorld");
+                        }
+                        state = State.BEGIN;
+                        repaint();
                     }
                     break;
                 case KeyEvent.VK_L:
@@ -446,9 +490,21 @@ public class Space extends JPanel//二维坐标表示的空间
                     {
                         JFileChooser fd = new JFileChooser();
                         fd.showOpenDialog(null);
-                        File f = fd.getSelectedFile();
-                        if (f != null)
+                        File file = fd.getSelectedFile();
+                        if (file != null)
                         {
+                            try {
+                                fileManager.readRecord(file);
+                            }catch (FileNotFoundException ffe)
+                            {
+                                JOptionPane.showMessageDialog(null, "出错啦", "找不到文件！", JOptionPane.ERROR_MESSAGE);
+                            }catch (IOException ioe)
+                            {
+                                JOptionPane.showMessageDialog(null, "出错啦", "文件读取失败！", JOptionPane.ERROR_MESSAGE);
+                            }
+                            System.out.println("文件读取成功");
+                            state = State.REPLAY;
+                            replay();
                         }
                     }
                     break;

@@ -1,11 +1,10 @@
 package huluwa.Replay;
 
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import huluwa.Space.Space;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
+import javax.xml.crypto.Data;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -19,17 +18,13 @@ public class FileManager
     private Space space;
     public FileManager(Space space)
     {
-        this.space = space;
+        this.space = space; record = new Record();
     }
-    public void newRecord() //新建记录，新建文件，以时间命名
-    {
-        record = new Record();
-
-     }
-    public void readRecord(File file)
+    public void readRecord(File file) throws FileNotFoundException, IOException//读文件 存入record
     {
         this.file = file;
-        //读文件 存入record
+        DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+        record.read(in);
     }
     public void writeRecord(Scene scene)//每次刷新时调用，向文件中添加一个场景
     {
@@ -50,7 +45,7 @@ public class FileManager
         }
         try
         {
-            DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
+            DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
             record.write(out);
 
             out.close();
@@ -65,8 +60,8 @@ public class FileManager
     }
     public Record getRecord()
     {
-        return record; //供Space 回放调用
-    }
+        return record;
+    }//供Space 回放调用
 
    /* @Override
     public void run()
