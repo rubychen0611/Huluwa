@@ -29,7 +29,6 @@ public class Huluwa extends Creature
         URL loc = this.getClass().getClassLoader().getResource("huluwa" + index +".png");
         ImageIcon iia = new ImageIcon(loc);
         Image image = iia.getImage().getScaledInstance(100,100,Image.SCALE_DEFAULT);
-        this.setImage(image);
         livingImage = image;
 
         loc = this.getClass().getClassLoader().getResource("huluwa" + index +"_dead.png");

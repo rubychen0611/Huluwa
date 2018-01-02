@@ -18,7 +18,6 @@ public class Minion extends Creature //小喽啰类
         URL loc = this.getClass().getClassLoader().getResource("minion.png");
         ImageIcon iia = new ImageIcon(loc);
         Image image = iia.getImage().getScaledInstance(100,100,Image.SCALE_DEFAULT);
-        this.setImage(image);
         livingImage = image;
         loc = this.getClass().getClassLoader().getResource("minion_dead.png");
         iia = new ImageIcon(loc);

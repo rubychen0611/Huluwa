@@ -5,11 +5,11 @@ import huluwa.Formation.LongSnakeForm;
 import huluwa.Formation.SwordForm;
 import huluwa.Queue.HuluwaQueue;
 import huluwa.Queue.ScorpionQueue;
-import huluwa.Background.*;
 import huluwa.Replay.DisplayElement;
 import huluwa.Replay.FileManager;
 import huluwa.Replay.Record;
 import huluwa.Replay.Scene;
+import huluwa.Thing2D;
 
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -21,7 +21,6 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.swing.*;
-import javax.swing.text.html.HTMLDocument;
 
 import static java.lang.Thread.interrupted;
 import static java.lang.Thread.sleep;
@@ -363,7 +362,7 @@ public class Space extends JPanel//二维坐标表示的空间
                     }
                     if (!positions[i][j].ifEmpty()) {
                         synchronized (positions[i][j].getHolder()) {
-                            g.drawImage(positions[i][j].getHolder().getImage(), i * SPACE, j * SPACE, this);  //绘制生物图片
+                            g.drawImage(livingImages.get(positions[i][j].getHolder().getCreatureNo()), i * SPACE, j * SPACE, this);  //绘制生物图片
                             scene.addDisplayElement(positions[i][j].getHolder().getCreatureNo(),true,i,j);
                         }
                     }
@@ -376,52 +375,52 @@ public class Space extends JPanel//二维坐标表示的空间
         switch (state)
         {
             case BEGIN :
-                StartBackground sbg = new StartBackground();
+                Thing2D sbg = new Thing2D("start.png");
                 g.drawImage(sbg.getImage(), 0, 0, this);
                 break;
             case RUNNING:
             {
-                Background bg = new Background();
+                Thing2D bg = new Thing2D("bg.png");
                 g.drawImage(bg.getImage(), 0, 0, this);
                 drawSituation(g);
             } break;
             case END:
             {
-                Background bg = new Background();
+                Thing2D bg = new Thing2D("bg.png");
                 g.drawImage(bg.getImage(), 0, 0, this);
                 drawSituation(g);
                 if(goodGroupCount == 0)
                 {
-                    MonstersWin mw = new MonstersWin();
+                    Thing2D mw = new Thing2D("yj_win.png");
                     g.drawImage(mw.getImage(), 0, 0, this);
                 }
                 else
                 {
-                    HuluwaWin hw = new HuluwaWin();
+                    Thing2D hw = new Thing2D("hlw_win.png");
                     g.drawImage(hw.getImage(), 0, 0, this);
                 }
             } break;
             case REPLAY:
             {
 
-                Background bg = new Background();
+                Thing2D bg = new Thing2D("bg.png");
                 g.drawImage(bg.getImage(), 0, 0, this);
                 drawRecord(g);
 
             } break;
             case REPLAYEND:
             {
-                Background bg = new Background();
+                Thing2D bg = new Thing2D("bg.png");
                 g.drawImage(bg.getImage(), 0, 0, this);
                 drawRecord(g);
                 if(fileManager.getRecord().getResult())
                 {
-                    HuluwaWinReplay hw = new HuluwaWinReplay();
+                    Thing2D hw = new Thing2D("hlw_win_replay.png");
                     g.drawImage(hw.getImage(), 0, 0, this);
                 }
                 else
                 {
-                    MonstersWinReplay mw = new MonstersWinReplay();
+                    Thing2D mw = new Thing2D("yj_win_replay");
                     g.drawImage(mw.getImage(), 0, 0, this);
                 }
                 break;

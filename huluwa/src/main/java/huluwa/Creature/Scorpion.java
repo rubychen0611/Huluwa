@@ -16,7 +16,7 @@ public class Scorpion extends Creature //蝎子精类
         URL loc = this.getClass().getClassLoader().getResource("scorpion.png");
         ImageIcon iia = new ImageIcon(loc);
         Image image = iia.getImage().getScaledInstance(100,100,Image.SCALE_DEFAULT);
-        this.setImage(image);
+
         livingImage = image;
         loc = this.getClass().getClassLoader().getResource("scorpion_dead.png");
         iia = new ImageIcon(loc);
@@ -24,8 +24,5 @@ public class Scorpion extends Creature //蝎子精类
         deadImage = image;
         sendImages();
     }
-   /* public void report()
-    {
-        System.out.print("🦂");
-    }*/
+
 }

@@ -16,7 +16,6 @@ public class Oldman extends Creature //生物：老爷爷
         URL loc = this.getClass().getClassLoader().getResource("oldman.png");
         ImageIcon iia = new ImageIcon(loc);
         Image image = iia.getImage().getScaledInstance(100,100,Image.SCALE_DEFAULT);
-        this.setImage(image);
         livingImage = image;
         loc = this.getClass().getClassLoader().getResource("oldman_dead.png");
         iia = new ImageIcon(loc);
@@ -24,9 +23,6 @@ public class Oldman extends Creature //生物：老爷爷
         deadImage = image;
         sendImages();
     }
-    /*public void report()
-    {
-        System.out.print("👴");
-    }*/
+
 }
 

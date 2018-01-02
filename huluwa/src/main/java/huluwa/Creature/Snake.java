@@ -16,7 +16,6 @@ public class Snake extends Creature //生物：蛇精
         URL loc = this.getClass().getClassLoader().getResource("snake.png");
         ImageIcon iia = new ImageIcon(loc);
         Image image = iia.getImage().getScaledInstance(100,100,Image.SCALE_DEFAULT);
-        this.setImage(image);
         livingImage = image;
         loc = this.getClass().getClassLoader().getResource("snake_dead.png");
         iia = new ImageIcon(loc);
@@ -24,8 +23,4 @@ public class Snake extends Creature //生物：蛇精
         deadImage = image;
         sendImages();
     }
-   /* public void report()
-    {
-        System.out.print("🐍");
-    }*/
 }

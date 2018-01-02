@@ -15,7 +15,7 @@ enum Species //物种
     HULUWA, OLDMAN, SNAKE, SCORPION, MINION;
 }
 
-public class Creature extends Thing2D implements Runnable//抽象类：生物
+public class Creature implements Runnable//抽象类：生物
 {
     public Species species; //物种
     protected Position position; //位置
@@ -41,16 +41,6 @@ public class Creature extends Thing2D implements Runnable//抽象类：生物
     public int getCreatureNo()
     {
         return creatureNo;
-    }
-
-    public Image getDeadImage()
-    {
-        return deadImage;
-    }
-
-    public Image getLivingImage()
-    {
-        return livingImage;
     }
 
     protected void sendImages()
