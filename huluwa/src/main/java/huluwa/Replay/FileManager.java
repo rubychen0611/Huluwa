@@ -15,12 +15,12 @@ public class FileManager
 {
     private Record record;
     private File file;
-    private Space space;
-    public FileManager(Space space)
+   // private Space space;
+    public FileManager()
     {
-        this.space = space; record = new Record();
+         record = new Record();
     }
-    public void readRecord(File file) throws FileNotFoundException, IOException//读文件 存入record
+    public void readRecord(File file) throws IOException//读文件 存入record
     {
         this.file = file;
         DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
@@ -53,29 +53,10 @@ public class FileManager
         {
             e.printStackTrace();
         }
-        for(Scene scene : record.getScenes())
-        {
-
-        }
     }
     public Record getRecord()
     {
         return record;
     }//供Space 回放调用
 
-   /* @Override
-    public void run()
-    {
-        while(!interrupted())
-        {
-            try{
-            space.waitingForNewScene();
-            writeRecord(space.getScene());//添加场景
-              //  sleep(500);
-            }catch (InterruptedException ie)
-            {
-                System.out.println("FileManager: interrupt");
-            }
-        }
-    }*/
 }

@@ -1,18 +1,16 @@
 package huluwa.Creature;
 import huluwa.Formation.Tuple;
 import huluwa.Space.*;
-import huluwa.Thing2D;
 
 import java.awt.*;
 import java.util.Random;
-import java.util.Stack;
 
 import static java.lang.Thread.interrupted;
 import static java.lang.Thread.yield;
 
 enum Species //物种
 {
-    HULUWA, OLDMAN, SNAKE, SCORPION, MINION;
+    HULUWA, OLDMAN, SNAKE, SCORPION, MINION
 }
 
 public class Creature implements Runnable//抽象类：生物
@@ -131,7 +129,6 @@ public class Creature implements Runnable//抽象类：生物
                 return this.space.getPosition(x-g, y);
         }
         //再看距离最近的敌人位置（广度优先搜索）决定上或者下
-        int ex, ey;
         Tuple ep = nearestEnemy(x, y, g, s);
         if(ep.getY() < y)
             return this.space.getPosition(x,y-1);
@@ -153,7 +150,6 @@ public class Creature implements Runnable//抽象类：生物
                 try {
                     Position nextPos = decideNextPos();//判断下一步移动位置
                     synchronized (nextPos) {
-                        if (nextPos != null) {
                             nextPos.waitForPos();       //如果该位置有人，等待
                             if (!this.isAlive()) break;
                             yield();
@@ -161,7 +157,6 @@ public class Creature implements Runnable//抽象类：生物
                                 leavePosition();    //两句之间可能出现位置为空
                                 setPosition(nextPos);
                             }
-                        }
                     }
                     Random rand = new Random();
                    Thread.sleep(rand.nextInt(1000) + 800);

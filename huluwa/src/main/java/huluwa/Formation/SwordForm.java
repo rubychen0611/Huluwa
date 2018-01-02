@@ -1,8 +1,5 @@
 package huluwa.Formation;
 
-import huluwa.Space.Position;
-import huluwa.Space.Space;
-
 import java.util.ArrayList;
 
 public class SwordForm extends Formation //偃月形
@@ -10,7 +7,7 @@ public class SwordForm extends Formation //偃月形
     public SwordForm()
     {
         length = 11;
-        posTuples  = new ArrayList<Tuple>(length);
+        posTuples  = new ArrayList<>(length);
         posTuples.add(new Tuple(6,4));
         posTuples.add(new Tuple(6,3));
         posTuples.add(new Tuple(6,5));

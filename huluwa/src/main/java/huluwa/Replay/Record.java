@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class Record
 {
-    ArrayList<Scene> scenes; //定时记录场景，每隔0.2s显示
+    private ArrayList<Scene> scenes; //定时记录场景，每隔0.2s显示
     boolean result; //记录大战结果，0为妖精胜，1为葫芦娃胜
     public Record()
     {

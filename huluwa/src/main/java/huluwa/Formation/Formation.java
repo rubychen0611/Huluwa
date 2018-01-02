@@ -11,10 +11,5 @@ public class Formation  //队形基类
     {
         return posTuples;
     }
-
-    public int getLength()
-    {
-        return length;
-    }
 }
 

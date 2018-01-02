@@ -2,10 +2,10 @@ package huluwa.Replay;
 
 public class DisplayElement
 {
-    int creatureNo;
-    boolean isAlive;
-    int x;
-    int y;
+    private int creatureNo;
+    private boolean isAlive;
+    private int x;
+    private int y;
     public DisplayElement(int creatureNo, boolean isAlive, int x, int y)
     {
         this.creatureNo = creatureNo;

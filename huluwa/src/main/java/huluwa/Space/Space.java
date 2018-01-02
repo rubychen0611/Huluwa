@@ -7,7 +7,6 @@ import huluwa.Queue.HuluwaQueue;
 import huluwa.Queue.ScorpionQueue;
 import huluwa.Replay.DisplayElement;
 import huluwa.Replay.FileManager;
-import huluwa.Replay.Record;
 import huluwa.Replay.Scene;
 import huluwa.Thing2D;
 
@@ -27,14 +26,14 @@ import static java.lang.Thread.sleep;
 
 enum State
 {
-    BEGIN,RUNNING,REPLAY,END,REPLAYEND;
+    BEGIN,RUNNING,REPLAY,END,REPLAYEND
 }
 public class Space extends JPanel//二维坐标表示的空间
 {
     public static final int N = 11;
     public static final int M = 9;
-    public static final int GOOD_GROUP_NUM= 8;
-    public static final int EVIL_GROUP_NUM= 12;
+    private static final int GOOD_GROUP_NUM= 8;
+    private static final int EVIL_GROUP_NUM= 12;
     private Position [][]positions;
 
     private final int SPACE = 100;
@@ -48,14 +47,12 @@ public class Space extends JPanel//二维坐标表示的空间
     private int evilGroupCount = EVIL_GROUP_NUM;
     private ExecutorService exec;
     private FileManager fileManager;
-    //private boolean ifNewScene = false;
     private Scene scene;
 
-    HuluwaQueue huluwaqueue = null;
-    ScorpionQueue scorpionqueue = null;
-    Oldman oldman = null;
-    Snake snake = null;
-    //ArrayList<Creature> creatures;
+    private HuluwaQueue huluwaqueue = null;
+    private ScorpionQueue scorpionqueue = null;
+    private Oldman oldman = null;
+    private Snake snake = null;
     private Map<Integer, Image> livingImages;
     private Map<Integer, Image> corpseImages;
     private boolean battleEnds = false;
@@ -73,7 +70,7 @@ public class Space extends JPanel//二维坐标表示的空间
     {
         return battleEnds;
     }
-    public synchronized void endBattle()
+    private synchronized void endBattle()
     {
         battleEnds = true;
     }
@@ -121,23 +118,20 @@ public class Space extends JPanel//二维坐标表示的空间
     }
     public void addImages(int creatureNo, Image livingImage, Image deadImage)
     {
-        this.livingImages.put(new Integer(creatureNo), livingImage);
-        this.corpseImages.put(new Integer(creatureNo),deadImage);
+        this.livingImages.put(creatureNo, livingImage);
+        this.corpseImages.put(creatureNo,deadImage);
     }
 
-    public boolean ifPositionLegal(int x, int y)
+    private boolean ifPositionLegal(int x, int y)
     {
-        if(x >= 0 && x < 11 && y >= 0 && y < 9)
-            return true;
-        else return false;
+        return x >= 0 && x < 11 && y >= 0 && y < 9;
     }
     private boolean decideWinner(Creature a, Creature b)   //决定战斗输赢，返回true则a赢，false则b赢
     {
         Random random = new Random();
         int rand = random.nextInt(100) + 1; //生成1-100之间的随机数
         int p = 50 + (a.rank - b.rank) * 5;    //强者赢的概率：p = 0.5 +(两者等级之差) * 0.05  则同等级输赢改了各为10%, 等级悬殊最大的两者相遇后强者赢的概率为85%
-        if (rand <= p) return true;    //随机数小于p则a赢
-        else return false;
+        return rand <= p; //随机数小于p则a赢
     }
     private synchronized void battle(Creature good, Creature evil)
     {
@@ -180,9 +174,7 @@ public class Space extends JPanel//二维坐标表示的空间
             {
                 assert !holder.ifPositionEmpty();
                 assert(holder.isAlive());
-                //synchronized (holder) {
                 battle(c, holder);
-                // }
                 return true;
             }
 
@@ -190,16 +182,12 @@ public class Space extends JPanel//二维坐标表示的空间
 
         if(ifPositionLegal(x-1, y) && !getPosition(x-1, y).ifEmpty())
         {
-            //holder = getPosition(x-1, y).getHolder();
-
             holder = getPosition(x-1,y).getHolder();
             if(holder.group != c.group) //后方有敌人
             {
                 assert !holder.ifPositionEmpty();
                 assert(holder.isAlive());
-                //synchronized (holder) {
                     battle(c, holder);
-               // }
                 return true;
             }
 
@@ -207,15 +195,12 @@ public class Space extends JPanel//二维坐标表示的空间
 
         if(ifPositionLegal(x, y+1) && !getPosition(x, y+1).ifEmpty())
         {
-            //holder = getPosition(x-1, y).getHolder();
             holder = getPosition(x,y+1).getHolder();
             if(holder.group != c.group) //下方有敌人
             {
                 assert !holder.ifPositionEmpty();
                 assert(holder.isAlive());
-                //synchronized (holder) {
                 battle(c, holder);
-                // }
                 return true;
             }
 
@@ -228,16 +213,14 @@ public class Space extends JPanel//二维坐标表示的空间
             {
                 assert !holder.ifPositionEmpty();
                 assert(holder.isAlive());
-                //synchronized (holder) {
                 battle(c, holder);
-                // }
                 return true;
             }
 
         }
         return false;
     }
-    public synchronized boolean ifBattleExists()
+    private synchronized boolean ifBattleExists()
     {
         //遍历葫芦娃方的四周有无敌人
         boolean flag = false;
@@ -254,7 +237,7 @@ public class Space extends JPanel//二维坐标表示的空间
         return flag;
     }
 
-    public final void initWorld()
+    private void initWorld()
     {
         goodGroupCount = GOOD_GROUP_NUM;
         evilGroupCount = EVIL_GROUP_NUM;
@@ -262,8 +245,8 @@ public class Space extends JPanel//二维坐标表示的空间
         state = State.BEGIN;
         setFocusable(true);
         Creature.setCountZero();
-        livingImages = new HashMap<Integer, Image>();
-        corpseImages = new HashMap<Integer, Image>();
+        livingImages = new HashMap<>();
+        corpseImages = new HashMap<>();
         w = SPACE * N;
         h = SPACE * M;
         positions = new Position[N][M];
@@ -277,10 +260,10 @@ public class Space extends JPanel//二维坐标表示的空间
         scorpionqueue = new ScorpionQueue(this,new SwordForm()); //蝎子精和喽啰
         snake = new Snake(10, 5,this);
         oldman = new Oldman(1,4,this);
-        fileManager = new FileManager(this);
+        fileManager = new FileManager();
     }
 
-    public void start() throws Exception
+    private void start() throws Exception
     {
         state = State.RUNNING;
         exec = Executors.newCachedThreadPool();
@@ -310,7 +293,7 @@ public class Space extends JPanel//二维坐标表示的空间
                 }
         );
     }
-    public void replay()
+    private void replay()
     {
         ArrayList<Scene> scenes = fileManager.getRecord().getScenes();
         Iterator it = scenes.iterator();
@@ -332,7 +315,7 @@ public class Space extends JPanel//二维坐标表示的空间
                     }
                 });
     }
-    public void drawRecord(Graphics g)
+    private void drawRecord(Graphics g)
     {
         ArrayList<DisplayElement>elements = scene.getElements();
         for(DisplayElement element: elements)
@@ -370,7 +353,7 @@ public class Space extends JPanel//二维坐标表示的空间
         }
         fileManager.writeRecord(scene);
     }
-    public void buildWorld(Graphics g)
+    private void buildWorld(Graphics g)
     {
         switch (state)
         {
@@ -420,7 +403,7 @@ public class Space extends JPanel//二维坐标表示的空间
                 }
                 else
                 {
-                    Thing2D mw = new Thing2D("yj_win_replay");
+                    Thing2D mw = new Thing2D("yj_win_replay.png");
                     g.drawImage(mw.getImage(), 0, 0, this);
                 }
                 break;
@@ -447,7 +430,6 @@ public class Space extends JPanel//二维坐标表示的空间
                 case KeyEvent.VK_SPACE:
                     if(state == State.BEGIN)
                     {
-                        //fileManager.newRecord();
                         try {
                             start();
                         } catch (Exception ex) {
@@ -458,7 +440,6 @@ public class Space extends JPanel//二维坐标表示的空间
                     {
                         exec.shutdownNow();
                         repaint();
-                        // fileManager.writeFile(goodGroupCount != 0);
                         try {
                             sleep(1000);
                         }catch (InterruptedException ie)

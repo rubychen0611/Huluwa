@@ -16,7 +16,7 @@ public class Position //队列位置类
         this.x = x;
         this.y = y;
         empty = true;
-        corpseImagesNo = new ArrayList<Integer>();
+        corpseImagesNo = new ArrayList<>();
     }
     public synchronized boolean ifEmpty()
     {
@@ -53,10 +53,6 @@ public class Position //队列位置类
     public synchronized void addCorpseImagesNo(int creatureNo)
     {
         corpseImagesNo.add(new Integer(creatureNo));
-    }
-    public synchronized ArrayList<Integer> getCorpseImagesNo()
-    {
-        return corpseImagesNo;
     }
 
 }

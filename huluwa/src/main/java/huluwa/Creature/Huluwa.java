@@ -10,10 +10,6 @@ public class Huluwa extends Creature
     private HuluAttribute huluAttribute;
     private int index;
 
-    public HuluAttribute getAttribute()
-    {
-        return this.huluAttribute;
-    }
     public int getIndex()
     {
         return this.index;

@@ -11,10 +11,9 @@ public class HuluwaQueue extends Queue<Huluwa>
     public HuluwaQueue(Space space, Formation form)
     {
         this.form = form;
-        //positions = form.getPosTuples();
         num = 7;
         creatures = new Huluwa[num];
-        ArrayList<Integer> array = new ArrayList<Integer>(num);
+        ArrayList<Integer> array = new ArrayList<>(num);
         int i;
         //任意站队
         for(i = 0; i < num; i++)

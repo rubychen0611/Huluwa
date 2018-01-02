@@ -1,7 +1,5 @@
 package huluwa.Replay;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -39,7 +37,6 @@ public class Scene
     public void read(DataInputStream in) throws IOException
     {
         int elementsSize = in.readInt();
-        DisplayElement element;
         int creatureNo, x, y;
         boolean isAlive;
         for(int i = 0; i < elementsSize; i++)
