@@ -3,8 +3,8 @@
 #### 陈紫琦 151220017
 ---
 ## 效果演示及说明
-游戏开始界面：
-![](https://github.com/rubychen0611/Huluwa/raw/master/screenshots/1.png)
+
+![游戏开始界面](https://github.com/rubychen0611/Huluwa/raw/master/screenshots/1.png)
 
 空格键开始游戏，葫芦娃和妖精分别以长蛇形和锋矢型站于左右两侧：
 ![](https://github.com/rubychen0611/Huluwa/raw/master/screenshots/2.png)
