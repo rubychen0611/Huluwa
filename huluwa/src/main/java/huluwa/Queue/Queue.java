@@ -1,8 +1,7 @@
 package huluwa.Queue;
 import huluwa.Creature.Creature;
 import huluwa.Formation.*;
-import huluwa.Space.*;
-import java.util.ArrayList;
+
 abstract public class Queue<T extends Creature> //抽象类：某生物队列
 {
     protected int num; //队列人数

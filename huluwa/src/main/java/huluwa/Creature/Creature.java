@@ -87,7 +87,6 @@ public class Creature implements Runnable//抽象类：生物
     }
     private Tuple nearestEnemy(int x, int y, int g, int[][] s)
     {
-       // boolean [][] f;
         int N = Space.N;
         int M = Space.M;
         int i, j;
@@ -114,7 +113,6 @@ public class Creature implements Runnable//抽象类：生物
         int y = position.getY();
         int g = this.group == Group.GOOD ? 1 : -1;
         int[][] s = this.space.getCurrentSituation();
-       // Position nextPos;
         int i;
         //先看前方(相对)有无敌人: 有则前进
         for(i = x + g; i < Space.N && i >= 0; i += g)

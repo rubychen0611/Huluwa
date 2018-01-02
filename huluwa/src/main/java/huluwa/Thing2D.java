@@ -20,8 +20,5 @@ public class Thing2D
         return this.image;
     }
 
-   // public void setImage(Image img) {
-   //     image = img;
-    //}
 
 } 

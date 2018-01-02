@@ -14,7 +14,6 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -172,8 +171,6 @@ public class Space extends JPanel//二维坐标表示的空间
             holder = getPosition(x+1,y).getHolder();
             if(holder.group != c.group) //前方有敌人
             {
-                assert !holder.ifPositionEmpty();
-                assert(holder.isAlive());
                 battle(c, holder);
                 return true;
             }
@@ -185,8 +182,6 @@ public class Space extends JPanel//二维坐标表示的空间
             holder = getPosition(x-1,y).getHolder();
             if(holder.group != c.group) //后方有敌人
             {
-                assert !holder.ifPositionEmpty();
-                assert(holder.isAlive());
                     battle(c, holder);
                 return true;
             }
@@ -198,8 +193,6 @@ public class Space extends JPanel//二维坐标表示的空间
             holder = getPosition(x,y+1).getHolder();
             if(holder.group != c.group) //下方有敌人
             {
-                assert !holder.ifPositionEmpty();
-                assert(holder.isAlive());
                 battle(c, holder);
                 return true;
             }
@@ -211,8 +204,6 @@ public class Space extends JPanel//二维坐标表示的空间
             holder = getPosition(x,y-1).getHolder();
             if(holder.group != c.group) //上方有敌人
             {
-                assert !holder.ifPositionEmpty();
-                assert(holder.isAlive());
                 battle(c, holder);
                 return true;
             }
@@ -220,6 +211,7 @@ public class Space extends JPanel//二维坐标表示的空间
         }
         return false;
     }
+   @SuppressWarnings("all")
     private synchronized boolean ifBattleExists()
     {
         //遍历葫芦娃方的四周有无敌人
@@ -419,46 +411,37 @@ public class Space extends JPanel//二维坐标表示的空间
 
     class TAdapter extends KeyAdapter
     {
-
         @Override
-        public void keyPressed(KeyEvent e)
-        {
+        public void keyPressed(KeyEvent e) {
             int key = e.getKeyCode();
 
-            switch (key)
-            {
+            switch (key) {
                 case KeyEvent.VK_SPACE:
-                    if(state == State.BEGIN)
-                    {
+                    if (state == State.BEGIN) {
                         try {
                             start();
                         } catch (Exception ex) {
                             System.out.println("error2");
                         }
-                    }
-                    else if(state == State.END )
-                    {
+                    } else if (state == State.END) {
                         exec.shutdownNow();
                         repaint();
                         try {
                             sleep(1000);
-                        }catch (InterruptedException ie)
-                        {
+                        } catch (InterruptedException ie) {
                             System.out.println("wating for all threads being shut down: interrupt");
                         }
-                        try {initWorld();}
-                        catch (Exception ex)
-                        {
+                        try {
+                            initWorld();
+                        } catch (Exception ex) {
                             System.out.println("Error appears when initWorld");
                         }
                         state = State.BEGIN;
                         repaint();
-                    }
-                    else if(state == State.REPLAYEND)
-                    {
-                        try {initWorld();}
-                        catch (Exception ex)
-                        {
+                    } else if (state == State.REPLAYEND) {
+                        try {
+                            initWorld();
+                        } catch (Exception ex) {
                             System.out.println("Error appears when initWorld");
                         }
                         state = State.BEGIN;
@@ -466,21 +449,16 @@ public class Space extends JPanel//二维坐标表示的空间
                     }
                     break;
                 case KeyEvent.VK_L:
-                    if(state == State.BEGIN)
-                    {
+                    if (state == State.BEGIN) {
                         JFileChooser fd = new JFileChooser();
                         fd.showOpenDialog(null);
                         File file = fd.getSelectedFile();
-                        if (file != null)
-                        {
+                        if (file != null) {
                             try {
                                 fileManager.readRecord(file);
-                            }catch (FileNotFoundException ffe)
-                            {
-                                JOptionPane.showMessageDialog(null, "出错啦", "找不到文件！", JOptionPane.ERROR_MESSAGE);
-                            }catch (IOException ioe)
-                            {
+                            } catch (IOException ioe) {
                                 JOptionPane.showMessageDialog(null, "出错啦", "文件读取失败！", JOptionPane.ERROR_MESSAGE);
+                                return;
                             }
                             System.out.println("文件读取成功");
                             state = State.REPLAY;
@@ -489,16 +467,14 @@ public class Space extends JPanel//二维坐标表示的空间
                     }
                     break;
                 case KeyEvent.VK_S:
-                    if(state == State.END)
-                    {
+                    if (state == State.END) {
                         fileManager.writeFile(goodGroupCount != 0);
                         JOptionPane.showMessageDialog(null, "保存成功！");
                     }
                     break;
-                default:break;
+                default:
+                    break;
             }
-
-
         }
     }
 }
