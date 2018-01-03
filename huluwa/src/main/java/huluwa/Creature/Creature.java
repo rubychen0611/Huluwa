@@ -150,7 +150,6 @@ public class Creature implements Runnable//抽象类：生物
                     synchronized (nextPos) {
                             nextPos.waitForPos();       //如果该位置有人，等待
                             if (!this.isAlive()) break;
-                            yield();
                             synchronized (this) {
                                 leavePosition();    //两句之间可能出现位置为空
                                 setPosition(nextPos);

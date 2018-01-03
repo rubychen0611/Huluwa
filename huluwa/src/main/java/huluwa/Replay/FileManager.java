@@ -9,7 +9,6 @@ public class FileManager
 {
     private Record record;
     private File file;
-   // private Space space;
     public FileManager()
     {
          record = new Record();
